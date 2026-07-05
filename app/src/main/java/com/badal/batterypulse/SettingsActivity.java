@@ -26,6 +26,9 @@ public class SettingsActivity extends Activity {
             finish();
         });
 
+        findViewById(R.id.btnHelpCenter).setOnClickListener(v ->
+                startActivity(new Intent(this, HelpCenterActivity.class)));
+
         SharedPreferences prefs = getSharedPreferences("battery_pulse", MODE_PRIVATE);
 
         Switch swNotifications = findViewById(R.id.swNotifications);

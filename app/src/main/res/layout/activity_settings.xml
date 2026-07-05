@@ -48,7 +48,8 @@
             android:layout_height="wrap_content"
             android:background="@drawable/card_bg"
             android:padding="18dp"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
             <TextView
                 android:layout_width="0dp"
                 android:layout_weight="1"
@@ -60,6 +61,29 @@
                 android:id="@+id/swFahrenheit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnHelpCenter"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_bg"
+            android:padding="18dp"
+            android:gravity="center_vertical">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="❓ Help Center"
+                android:textColor="@color/text_white"
+                android:textSize="16sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="›"
+                android:textColor="@color/text_grey"
+                android:textSize="20sp" />
         </LinearLayout>
     </LinearLayout>
 
