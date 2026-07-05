@@ -11,7 +11,15 @@ import android.widget.TextView;
 public class MainActivity extends Activity {
 
     private TextView tvLevel, tvStatus, tvVoltage, tvTemp, tvHealth;
+    private TextView tvWatts, tvSpeed, tvAmpAvg, tvAmpMin, tvAmpMax, tvPowerSource, tvAmpStatus;
     private Handler handler = new Handler();
+    private BatteryManager batteryManager;
+
+    private int minAmp = Integer.MAX_VALUE;
+    private int maxAmp = Integer.MIN_VALUE;
+    private long ampSum = 0;
+    private int ampCount = 0;
+    private int lastAmp = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +31,15 @@ public class MainActivity extends Activity {
         tvVoltage = findViewById(R.id.tvVoltage);
         tvTemp = findViewById(R.id.tvTemp);
         tvHealth = findViewById(R.id.tvHealth);
+        tvWatts = findViewById(R.id.tvWatts);
+        tvSpeed = findViewById(R.id.tvSpeed);
+        tvAmpAvg = findViewById(R.id.tvAmpAvg);
+        tvAmpMin = findViewById(R.id.tvAmpMin);
+        tvAmpMax = findViewById(R.id.tvAmpMax);
+        tvPowerSource = findViewById(R.id.tvPowerSource);
+        tvAmpStatus = findViewById(R.id.tvAmpStatus);
+
+        batteryManager = (BatteryManager) getSystemService(BATTERY_SERVICE);
 
         updateBatteryInfo();
     }
@@ -38,8 +55,26 @@ public class MainActivity extends Activity {
             int voltage = battery.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
             int temp = battery.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
             int health = battery.getIntExtra(BatteryManager.EXTRA_HEALTH, -1);
+            int plugged = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
 
             int pct = (int) ((level / (float) scale) * 100);
+
+            int microAmp = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
+            int milliAmp = microAmp / 1000;
+
+            if (milliAmp < minAmp) minAmp = milliAmp;
+            if (milliAmp > maxAmp) maxAmp = milliAmp;
+            ampSum += milliAmp;
+            ampCount++;
+            int ampAvg = (int) (ampSum / ampCount);
+
+            double watts = Math.abs((voltage / 1000.0) * (milliAmp / 1000.0));
+
+            String speedLabel;
+            if (watts >= 18) speedLabel = "Fast";
+            else if (watts >= 10) speedLabel = "Normal";
+            else if (watts > 0) speedLabel = "Slow";
+            else speedLabel = "Idle";
 
             String statusStr;
             switch (status) {
@@ -71,11 +106,39 @@ public class MainActivity extends Activity {
                     healthStr = "Unknown";
             }
 
+            String powerSourceStr;
+            switch (plugged) {
+                case BatteryManager.BATTERY_PLUGGED_AC:
+                    powerSourceStr = "Strong (AC)";
+                    break;
+                case BatteryManager.BATTERY_PLUGGED_USB:
+                    powerSourceStr = "USB";
+                    break;
+                case BatteryManager.BATTERY_PLUGGED_WIRELESS:
+                    powerSourceStr = "Wireless";
+                    break;
+                default:
+                    powerSourceStr = "Unplugged";
+            }
+
+            String ampStatusStr;
+            if (milliAmp > lastAmp) ampStatusStr = "Gaining";
+            else if (milliAmp < lastAmp) ampStatusStr = "Losing";
+            else ampStatusStr = "Stable";
+            lastAmp = milliAmp;
+
             tvLevel.setText("Battery Level: " + pct + "%");
             tvStatus.setText("Status: " + statusStr);
-            tvVoltage.setText("Voltage: " + voltage + " mV");
-            tvTemp.setText("Temperature: " + (temp / 10.0) + " °C");
-            tvHealth.setText("Health: " + healthStr);
+            tvVoltage.setText(voltage + " mV");
+            tvTemp.setText((temp / 10.0) + " °C");
+            tvHealth.setText(healthStr);
+            tvWatts.setText(String.format("%.1f watts", watts));
+            tvSpeed.setText(speedLabel);
+            tvAmpAvg.setText(ampAvg + " mA");
+            tvAmpMin.setText("Min: " + minAmp + " mA");
+            tvAmpMax.setText("Max: " + maxAmp + " mA");
+            tvPowerSource.setText(powerSourceStr);
+            tvAmpStatus.setText(ampStatusStr);
         }
 
         handler.postDelayed(this::updateBatteryInfo, 2000);

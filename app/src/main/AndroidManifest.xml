@@ -3,7 +3,7 @@
     <application
         android:allowBackup="true"
         android:label="BatteryPulse"
-        android:theme="@android:style/Theme.Material.Light">
+        android:theme="@android:style/Theme.Black.NoTitleBar">
         <activity
             android:name=".MainActivity"
             android:exported="true">
