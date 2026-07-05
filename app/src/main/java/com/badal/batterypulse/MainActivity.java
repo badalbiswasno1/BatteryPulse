@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
-    private TextView tvStatus, tvVoltage, tvTemp, tvHealth;
+    private TextView tvVoltage, tvTemp, tvHealth;
     private TextView tvWatts, tvSpeed, tvAmpAvg, tvAmpMin, tvAmpMax, tvPowerSource, tvAmpStatus;
     private TextView tvInsight, tvInsightIcon;
     private LinearLayout insightCard;
@@ -31,7 +31,6 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tvStatus = findViewById(R.id.tvStatus);
         tvVoltage = findViewById(R.id.tvVoltage);
         tvTemp = findViewById(R.id.tvTemp);
         tvHealth = findViewById(R.id.tvHealth);
