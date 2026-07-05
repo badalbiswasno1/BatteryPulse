@@ -13,7 +13,10 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.text.format.DateFormat;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -26,13 +29,16 @@ public class MainActivity extends Activity {
 
     private TextView tvVoltage, tvTemp, tvHealth;
     private TextView tvWatts, tvSpeed, tvAmpAvg, tvAmpMin, tvAmpMax, tvPowerSource, tvAmpStatus;
-    private TextView tvInsight, tvInsightIcon;
+    private TextView tvInsight, tvInsightIcon, tvTimeEstimate, tvBatteryScore, tvRemainingCard;
+    private TextView range5m, range30m, range1h;
+    private TextView placeholderCurrent, placeholderVoltage, placeholderTemp, placeholderPct;
     private LinearLayout insightCard;
     private CircularBatteryView circularBattery;
     private LineGraphView graphCurrent, graphVoltage, graphTemp, graphPct;
     private Handler handler = new Handler();
     private BatteryManager batteryManager;
     private SharedPreferences prefs;
+    private Vibrator vibrator;
 
     private int minAmp = Integer.MAX_VALUE;
     private int maxAmp = Integer.MIN_VALUE;
@@ -48,11 +54,16 @@ public class MainActivity extends Activity {
     private boolean notifiedLow = false;
     private boolean notifiedHot = false;
 
+    private List<Long> timestamps = new ArrayList<>();
     private List<Float> currentHistory = new ArrayList<>();
     private List<Float> voltageHistory = new ArrayList<>();
     private List<Float> tempHistory = new ArrayList<>();
     private List<Float> pctHistory = new ArrayList<>();
-    private static final int MAX_POINTS = 40;
+    private static final int MAX_POINTS = 1800;
+    private int selectedRangeMinutes = 5;
+
+    private Long pctRateAnchorTime = null;
+    private Integer pctRateAnchorValue = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,19 +82,41 @@ public class MainActivity extends Activity {
         tvAmpStatus = findViewById(R.id.tvAmpStatus);
         tvInsight = findViewById(R.id.tvInsight);
         tvInsightIcon = findViewById(R.id.tvInsightIcon);
+        tvTimeEstimate = findViewById(R.id.tvTimeEstimate);
+        tvBatteryScore = findViewById(R.id.tvBatteryScore);
+        tvRemainingCard = findViewById(R.id.tvRemainingCard);
         insightCard = findViewById(R.id.insightCard);
         circularBattery = findViewById(R.id.circularBattery);
         graphCurrent = findViewById(R.id.graphCurrent);
         graphVoltage = findViewById(R.id.graphVoltage);
         graphTemp = findViewById(R.id.graphTemp);
         graphPct = findViewById(R.id.graphPct);
+        placeholderCurrent = findViewById(R.id.placeholderCurrent);
+        placeholderVoltage = findViewById(R.id.placeholderVoltage);
+        placeholderTemp = findViewById(R.id.placeholderTemp);
+        placeholderPct = findViewById(R.id.placeholderPct);
+        range5m = findViewById(R.id.range5m);
+        range30m = findViewById(R.id.range30m);
+        range1h = findViewById(R.id.range1h);
 
-        findViewById(R.id.navHistory).setOnClickListener(v ->
-                startActivity(new Intent(this, HistoryActivity.class)));
-        findViewById(R.id.navStats).setOnClickListener(v ->
-                startActivity(new Intent(this, StatsActivity.class)));
-        findViewById(R.id.navSettings).setOnClickListener(v ->
-                startActivity(new Intent(this, SettingsActivity.class)));
+        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+
+        range5m.setOnClickListener(v -> selectRange(5, range5m));
+        range30m.setOnClickListener(v -> selectRange(30, range30m));
+        range1h.setOnClickListener(v -> selectRange(60, range1h));
+
+        findViewById(R.id.navHistory).setOnClickListener(v -> {
+            haptic();
+            startActivity(new Intent(this, HistoryActivity.class));
+        });
+        findViewById(R.id.navStats).setOnClickListener(v -> {
+            haptic();
+            startActivity(new Intent(this, StatsActivity.class));
+        });
+        findViewById(R.id.navSettings).setOnClickListener(v -> {
+            haptic();
+            startActivity(new Intent(this, SettingsActivity.class));
+        });
 
         batteryManager = (BatteryManager) getSystemService(BATTERY_SERVICE);
         prefs = getSharedPreferences("battery_pulse", MODE_PRIVATE);
@@ -99,6 +132,27 @@ public class MainActivity extends Activity {
         }
 
         updateBatteryInfo();
+    }
+
+    private void haptic() {
+        if (vibrator != null && vibrator.hasVibrator()) {
+            if (Build.VERSION.SDK_INT >= 26) {
+                vibrator.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE));
+            }
+        }
+    }
+
+    private void selectRange(int minutes, TextView selected) {
+        haptic();
+        selectedRangeMinutes = minutes;
+        TextView[] all = {range5m, range30m, range1h};
+        for (TextView t : all) {
+            t.setBackgroundResource(R.drawable.card_bg);
+            t.setTextColor(getColor(R.color.text_white));
+        }
+        selected.setBackgroundResource(R.drawable.card_bg_green);
+        selected.setTextColor(getColor(R.color.bg_black));
+        refreshGraphs();
     }
 
     private void updateBatteryInfo() {
@@ -237,15 +291,29 @@ public class MainActivity extends Activity {
             tvPowerSource.setText(powerSourceStr);
             tvAmpStatus.setText(ampStatusStr);
 
-            addPoint(currentHistory, milliAmp);
-            addPoint(voltageHistory, voltage);
-            addPoint(tempHistory, (float) tempC);
-            addPoint(pctHistory, pct);
+            long now = System.currentTimeMillis();
+            timestamps.add(now);
+            currentHistory.add((float) milliAmp);
+            voltageHistory.add((float) voltage);
+            tempHistory.add((float) tempC);
+            pctHistory.add((float) pct);
 
-            graphCurrent.setData(currentHistory, Color.parseColor("#22C55E"));
-            graphVoltage.setData(voltageHistory, Color.parseColor("#3B82F6"));
-            graphTemp.setData(tempHistory, Color.parseColor("#EF4444"));
-            graphPct.setData(pctHistory, Color.parseColor("#EAB308"));
+            if (timestamps.size() > MAX_POINTS) {
+                timestamps.remove(0);
+                currentHistory.remove(0);
+                voltageHistory.remove(0);
+                tempHistory.remove(0);
+                pctHistory.remove(0);
+            }
+
+            refreshGraphs();
+
+            String estimateText = calculateTimeEstimate(isPlugged, pct, now);
+            tvTimeEstimate.setText(estimateText);
+            tvRemainingCard.setText(estimateText);
+
+            int batteryScore = calculateBatteryScore(tempC, health, milliAmp, isPlugged);
+            tvBatteryScore.setText(String.valueOf(batteryScore));
 
             handleNotifications(pct, isPlugged, tempC);
             handleSessionTracking(isPlugged, pct);
@@ -255,9 +323,89 @@ public class MainActivity extends Activity {
         handler.postDelayed(this::updateBatteryInfo, 2000);
     }
 
-    private void addPoint(List<Float> list, float value) {
-        list.add(value);
-        if (list.size() > MAX_POINTS) list.remove(0);
+    private void refreshGraphs() {
+        long cutoff = System.currentTimeMillis() - (selectedRangeMinutes * 60000L);
+
+        List<Float> curr = filterByTime(currentHistory, cutoff);
+        List<Float> volt = filterByTime(voltageHistory, cutoff);
+        List<Float> temp = filterByTime(tempHistory, cutoff);
+        List<Float> pctL = filterByTime(pctHistory, cutoff);
+
+        setGraphOrPlaceholder(graphCurrent, placeholderCurrent, curr, Color.parseColor("#22C55E"));
+        setGraphOrPlaceholder(graphVoltage, placeholderVoltage, volt, Color.parseColor("#3B82F6"));
+        setGraphOrPlaceholder(graphTemp, placeholderTemp, temp, Color.parseColor("#EF4444"));
+        setGraphOrPlaceholder(graphPct, placeholderPct, pctL, Color.parseColor("#EAB308"));
+    }
+
+    private List<Float> filterByTime(List<Float> values, long cutoff) {
+        List<Float> result = new ArrayList<>();
+        for (int i = 0; i < timestamps.size(); i++) {
+            if (timestamps.get(i) >= cutoff) {
+                result.add(values.get(i));
+            }
+        }
+        return result;
+    }
+
+    private void setGraphOrPlaceholder(LineGraphView graph, TextView placeholder, List<Float> data, int color) {
+        if (data.size() < 2) {
+            graph.setVisibility(View.GONE);
+            placeholder.setVisibility(View.VISIBLE);
+        } else {
+            graph.setVisibility(View.VISIBLE);
+            placeholder.setVisibility(View.GONE);
+            graph.setData(data, color);
+        }
+    }
+
+    private String calculateTimeEstimate(boolean isPlugged, int pct, long now) {
+        if (pctRateAnchorTime == null) {
+            pctRateAnchorTime = now;
+            pctRateAnchorValue = pct;
+            return "Estimating...";
+        }
+
+        long elapsedMs = now - pctRateAnchorTime;
+        if (elapsedMs < 60000) {
+            return "Estimating...";
+        }
+
+        int pctChange = pct - pctRateAnchorValue;
+        double minutesElapsed = elapsedMs / 60000.0;
+
+        if (isPlugged) {
+            if (pctChange <= 0) return "Calculating...";
+            double ratePerMin = pctChange / minutesElapsed;
+            int remainingPct = 100 - pct;
+            int etaMin = (int) (remainingPct / ratePerMin);
+            pctRateAnchorTime = now;
+            pctRateAnchorValue = pct;
+            return "Est. " + etaMin + " min to full";
+        } else {
+            if (pctChange >= 0) return "Calculating...";
+            double ratePerMin = Math.abs(pctChange) / minutesElapsed;
+            int etaMin = (int) (pct / ratePerMin);
+            pctRateAnchorTime = now;
+            pctRateAnchorValue = pct;
+            return "Est. " + etaMin + " min to empty";
+        }
+    }
+
+    private int calculateBatteryScore(double tempC, int health, int milliAmp, boolean isPlugged) {
+        int score = 100;
+
+        if (tempC > 40) score -= (int) ((tempC - 40) * 4);
+        else if (tempC > 35) score -= (int) ((tempC - 35) * 2);
+
+        if (health == BatteryManager.BATTERY_HEALTH_OVERHEAT) score -= 30;
+        else if (health == BatteryManager.BATTERY_HEALTH_DEAD) score -= 60;
+        else if (health != BatteryManager.BATTERY_HEALTH_GOOD) score -= 10;
+
+        if (isPlugged && Math.abs(milliAmp) > 5000) score -= 10;
+
+        if (score < 0) score = 0;
+        if (score > 100) score = 100;
+        return score;
     }
 
     private void handleNotifications(int pct, boolean isPlugged, double tempC) {

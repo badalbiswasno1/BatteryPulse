@@ -38,6 +38,16 @@
                 android:layout_height="220dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="10dp"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tvTimeEstimate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Estimating..."
+                android:textColor="@color/text_grey"
+                android:textSize="14sp"
                 android:layout_marginBottom="20dp" />
 
             <LinearLayout
@@ -117,6 +127,38 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:text="🏆 Battery Score (est.)"
+                        android:textColor="@color/text_grey"
+                        android:textSize="14sp" />
+                    <TextView
+                        android:id="@+id/tvBatteryScore"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="--"
+                        android:textColor="@color/text_white"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/card_bg"
+                    android:padding="18dp"
+                    android:layout_marginEnd="8dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:text="📊 Amp average"
                         android:textColor="@color/text_grey"
                         android:textSize="14sp" />
@@ -128,6 +170,31 @@
                         android:text="0 mA"
                         android:textColor="@color/text_white"
                         android:textSize="22sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/card_bg"
+                    android:padding="18dp"
+                    android:layout_marginStart="8dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔌 Power source"
+                        android:textColor="@color/text_grey"
+                        android:textSize="14sp" />
+                    <TextView
+                        android:id="@+id/tvPowerSource"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="--"
+                        android:textColor="@color/text_white"
+                        android:textSize="18sp"
                         android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
@@ -180,11 +247,11 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🔌 Power source"
+                        android:text="📶 Amp status"
                         android:textColor="@color/text_grey"
                         android:textSize="14sp" />
                     <TextView
-                        android:id="@+id/tvPowerSource"
+                        android:id="@+id/tvAmpStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
@@ -294,11 +361,11 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📶 Amp status"
+                        android:text="⏱️ Est. Remaining"
                         android:textColor="@color/text_grey"
                         android:textSize="14sp" />
                     <TextView
-                        android:id="@+id/tvAmpStatus"
+                        android:id="@+id/tvRemainingCard"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
@@ -318,6 +385,46 @@
                 android:textStyle="bold"
                 android:layout_marginBottom="12dp" />
 
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/range5m"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="5m"
+                    android:textColor="@color/bg_black"
+                    android:background="@drawable/card_bg_green"
+                    android:paddingHorizontal="18dp"
+                    android:paddingVertical="8dp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="10dp" />
+
+                <TextView
+                    android:id="@+id/range30m"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="30m"
+                    android:textColor="@color/text_white"
+                    android:background="@drawable/card_bg"
+                    android:paddingHorizontal="18dp"
+                    android:paddingVertical="8dp"
+                    android:layout_marginEnd="10dp" />
+
+                <TextView
+                    android:id="@+id/range1h"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1h"
+                    android:textColor="@color/text_white"
+                    android:background="@drawable/card_bg"
+                    android:paddingHorizontal="18dp"
+                    android:paddingVertical="8dp" />
+            </LinearLayout>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -325,11 +432,23 @@
                 android:textColor="@color/text_grey"
                 android:textSize="13sp"
                 android:layout_marginBottom="4dp" />
-            <com.badal.batterypulse.LineGraphView
-                android:id="@+id/graphCurrent"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="90dp"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="16dp">
+                <com.badal.batterypulse.LineGraphView
+                    android:id="@+id/graphCurrent"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+                <TextView
+                    android:id="@+id/placeholderCurrent"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="Collecting data…"
+                    android:textColor="@color/text_grey"
+                    android:background="@drawable/card_bg" />
+            </FrameLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -338,11 +457,23 @@
                 android:textColor="@color/text_grey"
                 android:textSize="13sp"
                 android:layout_marginBottom="4dp" />
-            <com.badal.batterypulse.LineGraphView
-                android:id="@+id/graphVoltage"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="90dp"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="16dp">
+                <com.badal.batterypulse.LineGraphView
+                    android:id="@+id/graphVoltage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+                <TextView
+                    android:id="@+id/placeholderVoltage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="Collecting data…"
+                    android:textColor="@color/text_grey"
+                    android:background="@drawable/card_bg" />
+            </FrameLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -351,11 +482,23 @@
                 android:textColor="@color/text_grey"
                 android:textSize="13sp"
                 android:layout_marginBottom="4dp" />
-            <com.badal.batterypulse.LineGraphView
-                android:id="@+id/graphTemp"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="90dp"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="16dp">
+                <com.badal.batterypulse.LineGraphView
+                    android:id="@+id/graphTemp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+                <TextView
+                    android:id="@+id/placeholderTemp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="Collecting data…"
+                    android:textColor="@color/text_grey"
+                    android:background="@drawable/card_bg" />
+            </FrameLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -364,10 +507,22 @@
                 android:textColor="@color/text_grey"
                 android:textSize="13sp"
                 android:layout_marginBottom="4dp" />
-            <com.badal.batterypulse.LineGraphView
-                android:id="@+id/graphPct"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="90dp" />
+                android:layout_height="90dp">
+                <com.badal.batterypulse.LineGraphView
+                    android:id="@+id/graphPct"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+                <TextView
+                    android:id="@+id/placeholderPct"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="Collecting data…"
+                    android:textColor="@color/text_grey"
+                    android:background="@drawable/card_bg" />
+            </FrameLayout>
 
         </LinearLayout>
     </ScrollView>
