@@ -1,6 +1,7 @@
 package com.badal.batterypulse;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.LinearLayout;
@@ -12,6 +13,19 @@ public class HistoryActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
+
+        findViewById(R.id.navHome).setOnClickListener(v -> {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        });
+        findViewById(R.id.navStats).setOnClickListener(v -> {
+            startActivity(new Intent(this, StatsActivity.class));
+            finish();
+        });
+        findViewById(R.id.navSettings).setOnClickListener(v -> {
+            startActivity(new Intent(this, SettingsActivity.class));
+            finish();
+        });
 
         LinearLayout container = findViewById(R.id.historyContainer);
         SharedPreferences prefs = getSharedPreferences("battery_pulse", MODE_PRIVATE);

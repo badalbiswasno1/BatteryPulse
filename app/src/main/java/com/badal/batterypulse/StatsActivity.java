@@ -1,6 +1,7 @@
 package com.badal.batterypulse;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -11,6 +12,19 @@ public class StatsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stats);
+
+        findViewById(R.id.navHome).setOnClickListener(v -> {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        });
+        findViewById(R.id.navHistory).setOnClickListener(v -> {
+            startActivity(new Intent(this, HistoryActivity.class));
+            finish();
+        });
+        findViewById(R.id.navSettings).setOnClickListener(v -> {
+            startActivity(new Intent(this, SettingsActivity.class));
+            finish();
+        });
 
         TextView tvTotalSessions = findViewById(R.id.tvTotalSessions);
         TextView tvAvgDuration = findViewById(R.id.tvAvgDuration);
