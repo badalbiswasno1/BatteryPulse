@@ -416,6 +416,14 @@ public class MainActivity extends Activity {
 
 
 
+    private String formatMinutes(int totalMinutes) {
+        if (totalMinutes < 1) return "< 1 min";
+        if (totalMinutes < 60) return totalMinutes + " min";
+        int hours = totalMinutes / 60;
+        int mins = totalMinutes % 60;
+        return hours + "h " + mins + "m";
+    }
+
     private int calculateBatteryScore(double tempC, int health, int milliAmp, boolean isPlugged) {
         int score = 100;
 
