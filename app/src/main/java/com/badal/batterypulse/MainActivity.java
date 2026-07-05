@@ -63,8 +63,7 @@ public class MainActivity extends Activity {
     private static final int MAX_POINTS = 1800;
     private int selectedRangeMinutes = 5;
 
-    private Long pctRateAnchorTime = null;
-    private Integer pctRateAnchorValue = null;
+    private String cachedEstimate = "Estimating...";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -241,9 +240,17 @@ public class MainActivity extends Activity {
             }
 
             String ampStatusStr;
-            if (milliAmp > lastAmp) ampStatusStr = "Gaining";
-            else if (milliAmp < lastAmp) ampStatusStr = "Losing";
-            else ampStatusStr = "Stable";
+            if (isPlugged) {
+                if (milliAmp > lastAmp) ampStatusStr = "Gaining";
+                else if (milliAmp < lastAmp) ampStatusStr = "Losing";
+                else ampStatusStr = "Stable";
+            } else {
+                int absNow = Math.abs(milliAmp);
+                int absLast = Math.abs(lastAmp);
+                if (absNow > absLast) ampStatusStr = "Drain increasing";
+                else if (absNow < absLast) ampStatusStr = "Drain decreasing";
+                else ampStatusStr = "Stable";
+            }
             lastAmp = milliAmp;
 
             int ringColor;
@@ -311,7 +318,7 @@ public class MainActivity extends Activity {
 
             refreshGraphs();
 
-            String estimateText = calculateTimeEstimate(isPlugged, pct, now);
+            String estimateText = calculateTimeEstimate(isPlugged, pct);
             tvTimeEstimate.setText(estimateText);
             tvRemainingCard.setText(estimateText);
 
@@ -323,6 +330,7 @@ public class MainActivity extends Activity {
             updateWidget(pct, statusStr);
 
             if (lastPluggedState != null && lastPluggedState != isPlugged) {
+                cachedEstimate = "Estimating...";
                 boolean notificationsEnabled = prefs.getBoolean("notifications_enabled", true);
                 if (notificationsEnabled) {
                     if (isPlugged) {
@@ -373,37 +381,53 @@ public class MainActivity extends Activity {
         }
     }
 
-    private String calculateTimeEstimate(boolean isPlugged, int pct, long now) {
-        if (pctRateAnchorTime == null) {
-            pctRateAnchorTime = now;
-            pctRateAnchorValue = pct;
-            return "Estimating...";
+    private String calculateTimeEstimate(boolean isPlugged, int pct) {
+        long now = System.currentTimeMillis();
+        long lookbackMs = 10 * 60000L;
+        int refIndex = -1;
+
+        for (int i = 0; i < timestamps.size(); i++) {
+            if (now - timestamps.get(i) > lookbackMs) continue;
+            if (Math.round(pctHistory.get(i)) != pct) {
+                refIndex = i;
+                break;
+            }
         }
 
-        long elapsedMs = now - pctRateAnchorTime;
-        if (elapsedMs < 60000) {
-            return "Estimating...";
+        if (refIndex == -1) {
+            return cachedEstimate;
         }
 
-        int pctChange = pct - pctRateAnchorValue;
+        long elapsedMs = now - timestamps.get(refIndex);
         double minutesElapsed = elapsedMs / 60000.0;
+        if (minutesElapsed < 0.25) {
+            return cachedEstimate;
+        }
+
+        int pctChange = pct - Math.round(pctHistory.get(refIndex));
 
         if (isPlugged) {
-            if (pctChange <= 0) return "Calculating...";
+            if (pctChange <= 0) return cachedEstimate;
             double ratePerMin = pctChange / minutesElapsed;
             int remainingPct = 100 - pct;
-            int etaMin = (int) (remainingPct / ratePerMin);
-            pctRateAnchorTime = now;
-            pctRateAnchorValue = pct;
-            return "Est. " + etaMin + " min to full";
+            int etaMin = (int) Math.round(remainingPct / ratePerMin);
+            cachedEstimate = "Est. " + formatMinutes(etaMin) + " to full";
         } else {
-            if (pctChange >= 0) return "Calculating...";
+            if (pctChange >= 0) return cachedEstimate;
             double ratePerMin = Math.abs(pctChange) / minutesElapsed;
-            int etaMin = (int) (pct / ratePerMin);
-            pctRateAnchorTime = now;
-            pctRateAnchorValue = pct;
-            return "Est. " + etaMin + " min to empty";
+            int etaMin = (int) Math.round(pct / ratePerMin);
+            cachedEstimate = "Est. " + formatMinutes(etaMin) + " to empty";
         }
+
+        return cachedEstimate;
+    }
+
+    private String formatMinutes(int totalMinutes) {
+        if (totalMinutes < 1) return "< 1 min";
+        if (totalMinutes < 60) return totalMinutes + " min";
+        int hours = totalMinutes / 60;
+        int mins = totalMinutes % 60;
+        return hours + "h " + mins + "m";
     }
 
     private int calculateBatteryScore(double tempC, int health, int milliAmp, boolean isPlugged) {
