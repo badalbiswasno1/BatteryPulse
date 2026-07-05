@@ -11,6 +11,7 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@android:style/Theme.Black.NoTitleBar">
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -36,8 +37,6 @@
         <service
             android:name=".BatteryTileService"
             android:label="BatteryPulse"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
             android:icon="@android:drawable/ic_lock_idle_charging"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
             android:exported="true">
