@@ -57,6 +57,8 @@ public class MainActivity extends Activity {
             int health = battery.getIntExtra(BatteryManager.EXTRA_HEALTH, -1);
             int plugged = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
 
+            boolean isPlugged = plugged != 0;
+
             int pct = (int) ((level / (float) scale) * 100);
 
             int microAmp = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
@@ -68,13 +70,15 @@ public class MainActivity extends Activity {
             ampCount++;
             int ampAvg = (int) (ampSum / ampCount);
 
-            double watts = Math.abs((voltage / 1000.0) * (milliAmp / 1000.0));
+            double watts = 0;
+            String speedLabel = "Unplugged";
 
-            String speedLabel;
-            if (watts >= 18) speedLabel = "Fast";
-            else if (watts >= 10) speedLabel = "Normal";
-            else if (watts > 0) speedLabel = "Slow";
-            else speedLabel = "Idle";
+            if (isPlugged) {
+                watts = Math.abs((voltage / 1000.0) * (milliAmp / 1000.0));
+                if (watts >= 18) speedLabel = "Fast";
+                else if (watts >= 10) speedLabel = "Normal";
+                else speedLabel = "Slow";
+            }
 
             String statusStr;
             switch (status) {
