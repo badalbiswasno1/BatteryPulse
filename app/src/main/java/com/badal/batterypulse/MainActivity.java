@@ -3,15 +3,20 @@ package com.badal.batterypulse;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
-    private TextView tvLevel, tvStatus, tvVoltage, tvTemp, tvHealth;
+    private TextView tvStatus, tvVoltage, tvTemp, tvHealth;
     private TextView tvWatts, tvSpeed, tvAmpAvg, tvAmpMin, tvAmpMax, tvPowerSource, tvAmpStatus;
+    private TextView tvInsight, tvInsightIcon;
+    private LinearLayout insightCard;
+    private CircularBatteryView circularBattery;
     private Handler handler = new Handler();
     private BatteryManager batteryManager;
 
@@ -26,7 +31,6 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tvLevel = findViewById(R.id.tvLevel);
         tvStatus = findViewById(R.id.tvStatus);
         tvVoltage = findViewById(R.id.tvVoltage);
         tvTemp = findViewById(R.id.tvTemp);
@@ -38,6 +42,10 @@ public class MainActivity extends Activity {
         tvAmpMax = findViewById(R.id.tvAmpMax);
         tvPowerSource = findViewById(R.id.tvPowerSource);
         tvAmpStatus = findViewById(R.id.tvAmpStatus);
+        tvInsight = findViewById(R.id.tvInsight);
+        tvInsightIcon = findViewById(R.id.tvInsightIcon);
+        insightCard = findViewById(R.id.insightCard);
+        circularBattery = findViewById(R.id.circularBattery);
 
         batteryManager = (BatteryManager) getSystemService(BATTERY_SERVICE);
 
@@ -53,11 +61,12 @@ public class MainActivity extends Activity {
             int scale = battery.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
             int status = battery.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
             int voltage = battery.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
-            int temp = battery.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
+            int temp10 = battery.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
             int health = battery.getIntExtra(BatteryManager.EXTRA_HEALTH, -1);
             int plugged = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
 
             boolean isPlugged = plugged != 0;
+            double tempC = temp10 / 10.0;
 
             int pct = (int) ((level / (float) scale) * 100);
 
@@ -131,10 +140,45 @@ public class MainActivity extends Activity {
             else ampStatusStr = "Stable";
             lastAmp = milliAmp;
 
-            tvLevel.setText("Battery Level: " + pct + "%");
-            tvStatus.setText("Status: " + statusStr);
+            int ringColor;
+            String insightIcon;
+            String insightText;
+            int insightBg;
+
+            if (tempC >= 45) {
+                ringColor = Color.parseColor("#EF4444");
+                insightIcon = "🔥";
+                insightText = "High Temperature Detected";
+                insightBg = Color.parseColor("#3A1414");
+            } else if (tempC >= 40) {
+                ringColor = Color.parseColor("#EAB308");
+                insightIcon = "⚠️";
+                insightText = "Battery Warm — Consider Removing Case";
+                insightBg = Color.parseColor("#3A2E0A");
+            } else if (isPlugged && watts > 0 && watts < 7) {
+                ringColor = Color.parseColor("#EAB308");
+                insightIcon = "🐢";
+                insightText = "Charging is Slow";
+                insightBg = Color.parseColor("#3A2E0A");
+            } else if (!isPlugged && milliAmp < -1500) {
+                ringColor = Color.parseColor("#EAB308");
+                insightIcon = "🎮";
+                insightText = "High Drain — Avoid Heavy Usage Now";
+                insightBg = Color.parseColor("#3A2E0A");
+            } else {
+                ringColor = Color.parseColor("#22C55E");
+                insightIcon = "✅";
+                insightText = "Battery is Healthy";
+                insightBg = Color.parseColor("#0F2A1A");
+            }
+
+            circularBattery.setData(pct, ringColor, statusStr);
+            insightCard.setBackgroundColor(insightBg);
+            tvInsightIcon.setText(insightIcon);
+            tvInsight.setText(insightText);
+
             tvVoltage.setText(voltage + " mV");
-            tvTemp.setText((temp / 10.0) + " °C");
+            tvTemp.setText(tempC + " °C");
             tvHealth.setText(healthStr);
             tvWatts.setText(String.format("%.1f watts", watts));
             tvSpeed.setText(speedLabel);
