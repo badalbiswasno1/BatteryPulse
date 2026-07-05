@@ -382,53 +382,39 @@ public class MainActivity extends Activity {
     }
 
     private String calculateTimeEstimate(boolean isPlugged, int pct) {
-        long now = System.currentTimeMillis();
-        long lookbackMs = 10 * 60000L;
-        int refIndex = -1;
+        int chargeCounterUah = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
+        int currentNowUa = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
 
-        for (int i = 0; i < timestamps.size(); i++) {
-            if (now - timestamps.get(i) > lookbackMs) continue;
-            if (Math.round(pctHistory.get(i)) != pct) {
-                refIndex = i;
-                break;
-            }
-        }
-
-        if (refIndex == -1) {
+        if (chargeCounterUah <= 0 || currentNowUa == Integer.MIN_VALUE || pct <= 0) {
             return cachedEstimate;
         }
 
-        long elapsedMs = now - timestamps.get(refIndex);
-        double minutesElapsed = elapsedMs / 60000.0;
-        if (minutesElapsed < 0.25) {
+        double currentAbsUa = Math.abs(currentNowUa);
+        if (currentAbsUa < 1000) {
             return cachedEstimate;
         }
-
-        int pctChange = pct - Math.round(pctHistory.get(refIndex));
 
         if (isPlugged) {
-            if (pctChange <= 0) return cachedEstimate;
-            double ratePerMin = pctChange / minutesElapsed;
-            int remainingPct = 100 - pct;
-            int etaMin = (int) Math.round(remainingPct / ratePerMin);
-            cachedEstimate = "Est. " + formatMinutes(etaMin) + " to full";
+            if (currentNowUa <= 0) return cachedEstimate;
+            double estimatedFullCapacityUah = chargeCounterUah / (pct / 100.0);
+            double remainingToFullUah = estimatedFullCapacityUah - chargeCounterUah;
+            if (remainingToFullUah <= 0) {
+                cachedEstimate = "Almost full";
+                return cachedEstimate;
+            }
+            double hours = remainingToFullUah / currentAbsUa;
+            int totalMinutes = (int) Math.round(hours * 60);
+            cachedEstimate = "Est. " + formatMinutes(totalMinutes) + " to full (approx)";
         } else {
-            if (pctChange >= 0) return cachedEstimate;
-            double ratePerMin = Math.abs(pctChange) / minutesElapsed;
-            int etaMin = (int) Math.round(pct / ratePerMin);
-            cachedEstimate = "Est. " + formatMinutes(etaMin) + " to empty";
+            double hours = chargeCounterUah / currentAbsUa;
+            int totalMinutes = (int) Math.round(hours * 60);
+            cachedEstimate = "Est. " + formatMinutes(totalMinutes) + " to empty (approx)";
         }
 
         return cachedEstimate;
     }
 
-    private String formatMinutes(int totalMinutes) {
-        if (totalMinutes < 1) return "< 1 min";
-        if (totalMinutes < 60) return totalMinutes + " min";
-        int hours = totalMinutes / 60;
-        int mins = totalMinutes % 60;
-        return hours + "h " + mins + "m";
-    }
+
 
     private int calculateBatteryScore(double tempC, int health, int milliAmp, boolean isPlugged) {
         int score = 100;
