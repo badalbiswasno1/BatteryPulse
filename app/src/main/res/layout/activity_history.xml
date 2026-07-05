@@ -23,6 +23,29 @@
                 android:textColor="@color/text_white"
                 android:textSize="24sp"
                 android:textStyle="bold"
+                android:layout_marginBottom="16dp" />
+
+            <EditText
+                android:id="@+id/searchBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Search history..."
+                android:textColorHint="@color/text_grey"
+                android:textColor="@color/text_white"
+                android:background="@drawable/card_bg"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:id="@+id/btnExportCsv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📤 Export CSV"
+                android:textColor="@color/bg_black"
+                android:background="@drawable/card_bg_green"
+                android:gravity="center"
+                android:padding="14dp"
+                android:textStyle="bold"
                 android:layout_marginBottom="20dp" />
 
             <LinearLayout

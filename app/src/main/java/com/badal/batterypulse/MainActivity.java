@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
     private boolean notifiedFull = false;
     private boolean notifiedLow = false;
     private boolean notifiedHot = false;
+    private Boolean lastPluggedState = null;
 
     private List<Long> timestamps = new ArrayList<>();
     private List<Float> currentHistory = new ArrayList<>();
@@ -168,6 +169,7 @@ public class MainActivity extends Activity {
             int temp10 = battery.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
             int health = battery.getIntExtra(BatteryManager.EXTRA_HEALTH, -1);
             int plugged = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+            String technology = battery.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);
 
             boolean isPlugged = plugged != 0;
             double tempC = temp10 / 10.0;
@@ -319,6 +321,18 @@ public class MainActivity extends Activity {
             handleNotifications(pct, isPlugged, tempC);
             handleSessionTracking(isPlugged, pct);
             updateWidget(pct, statusStr);
+
+            if (lastPluggedState != null && lastPluggedState != isPlugged) {
+                boolean notificationsEnabled = prefs.getBoolean("notifications_enabled", true);
+                if (notificationsEnabled) {
+                    if (isPlugged) {
+                        NotificationHelper.notify(this, 4, "Charger Connected", "Battery at " + pct + "%");
+                    } else {
+                        NotificationHelper.notify(this, 5, "Charger Disconnected", "Battery at " + pct + "%");
+                    }
+                }
+            }
+            lastPluggedState = isPlugged;
         }
 
         handler.postDelayed(this::updateBatteryInfo, 2000);
