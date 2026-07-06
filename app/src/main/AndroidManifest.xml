@@ -49,6 +49,8 @@
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
-        <service android:name=".overlay.OverlayService" android:exported="false" />
+        <service android:name=".overlay.OverlayService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Gaming performance overlay for battery pulse app" />
+        </service>
     </application>
 </manifest>
