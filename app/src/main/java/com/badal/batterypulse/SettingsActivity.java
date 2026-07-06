@@ -45,7 +45,11 @@ public class SettingsActivity extends Activity {
 
         swNotifications.setChecked(prefs.getBoolean("notifications_enabled", true));
         swFahrenheit.setChecked(prefs.getBoolean("use_fahrenheit", false));
-        swOverlay.setChecked(prefs.getBoolean("overlay_enabled", false) && Settings.canDrawOverlays(this));
+        boolean shouldBeOn = prefs.getBoolean("overlay_enabled", false) && Settings.canDrawOverlays(this);
+        swOverlay.setChecked(shouldBeOn);
+        if (shouldBeOn) {
+            startOverlay();
+        }
 
         swNotifications.setOnCheckedChangeListener((btn, checked) ->
                 prefs.edit().putBoolean("notifications_enabled", checked).apply());
