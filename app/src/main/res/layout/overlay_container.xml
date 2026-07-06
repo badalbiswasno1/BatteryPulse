@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/pillLayout"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/pill_bg"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvPillBattery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--%"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="  •  "
+            android:textColor="#66FFFFFF"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tvPillTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--°C"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/expandedLayout"
+        android:orientation="vertical"
+        android:layout_width="230dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/expanded_bg"
+        android:padding="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvExpBattery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvExpTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Temp: --"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvExpVoltage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Voltage: --"
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvExpCurrent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Current: --"
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvExpWatts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--"
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvExpHealth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Health: --"
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvExpRam"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RAM: --"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvExpThermal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thermal: --"
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvExpRefresh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Refresh: --"
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvExpNetwork"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvExpSpeed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="↓ -- ↑ --"
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvExpPing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ping: --"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+</FrameLayout>
